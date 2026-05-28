@@ -86,4 +86,7 @@ class BST {
         return result;
     }
 };
+void makeTree(BST<std::string>& tree, const std::string& filename);
+
+void printFreq(const BST<std::string>& tree);
 #endif  // INCLUDE_BST_H_
