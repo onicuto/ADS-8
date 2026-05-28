@@ -1,40 +1,97 @@
-// Copyright 2021 NNTU-CS
-#ifndef INCLUDE_BST_H_
-#define INCLUDE_BST_H_
+// Copyright 2021 NNTU-CS 
+#ifndef INCLUDE_TREE_DICTIONARY_H_
+#define INCLUDE_TREE_DICTIONARY_H_
 
 #include <algorithm>
 #include <utility>
 #include <vector>
-#include <string>
 
-template <typename T>
-class BST {
+
+template <typename KeyType>
+class TreeDictionary {
  private:
-    struct Node {
-        T key;
-        int count;
-        Node* left;
-        Node* right;
+    struct TreeNode {
+        KeyType word;          // Ключ (слово)
+        int frequency;         // Частота появления
+        TreeNode* leftChild;   // Указатель на левое поддерево
+        TreeNode* rightChild;  // Указатель на правое поддерево
 
-        explicit Node(T k) : key(std::move(k)), count(1), left(nullptr), right(nullptr) {}
+        // Конструктор узла
+        explicit TreeNode(const KeyType& key)
+            : word(key), frequency(1), leftChild(nullptr), rightChild(nullptr) {}
     };
 
-    Node* root;
+    TreeNode* rootNode;  // Корень дерева
 
-    Node* insert(Node* node, T value) {
-        if (!node) return new Node(std::move(value));
-        if (value == node->key) {
-            ++node->count;
-        } else if (value < node->key) {
-            node->left = insert(node->left, std::move(value));
+    // Вспомогательная рекурсивная функция для вставки узла
+    void insertNode(TreeNode*& currentNode, const KeyType& key) {
+        if (!currentNode) {
+            currentNode = new TreeNode(key);
+        } else if (key < currentNode->word) {
+            insertNode(currentNode->leftChild, key);
+        } else if (key > currentNode->word) {
+            insertNode(currentNode->rightChild, key);
         } else {
-            node->right = insert(node->right, std::move(value));
+            currentNode->frequency++;  // Увеличиваем счетчик при повторе
         }
-        return node;
     }
 
-    int depth(Node* node) const {
-        if (!node) return 0;
+    // Вспомогательная рекурсивная функция для вычисления глубины дерева
+    int calculateHeight(TreeNode* currentNode) const {
+        if (!currentNode) return -1;
+        int leftHeight = calculateHeight(currentNode->leftChild);
+        int rightHeight = calculateHeight(currentNode->rightChild);
+        return 1 + std::max(leftHeight, rightHeight);
+    }
+
+    // Вспомогательная рекурсивная функция для поиска частоты слова
+    int findFrequency(TreeNode* currentNode, const KeyType& key) const {
+        if (!currentNode) return 0;
+        if (key == currentNode->word) return currentNode->frequency;
+        if (key < currentNode->word)
+            return findFrequency(currentNode->leftChild, key);
+        return findFrequency(currentNode->rightChild, key);
+    }
+
+    // Вспомогательная рекурсивная функция для удаления дерева
+    void deleteTree(TreeNode* currentNode) {
+        if (!currentNode) return;
+        deleteTree(currentNode->leftChild);
+        deleteTree(currentNode->rightChild);
+        delete currentNode;
+    }
+
+ public:
+    // Конструктор: создает пустое дерево
+    TreeDictionary() : rootNode(nullptr) {}
+
+    // Деструктор: удаляет все узлы дерева
+    ~TreeDictionary() {
+        deleteTree(rootNode);
+    }
+
+    // Публичный метод для вставки слова
+    void insert(const KeyType& key) {
+        insertNode(rootNode, key);
+    }
+
+    // Публичный метод для получения высоты дерева
+    int depth() const {
+        return calculateHeight(rootNode);
+    }
+
+    // Публичный метод для поиска частоты слова
+    int search(const KeyType& key) const {
+        return findFrequency(rootNode, key);
+    }
+
+    // Получение корневого узла (используется в alg.cpp для обхода)
+    TreeNode* getRoot() const {
+        return rootNode;
+    }
+};
+
+#endif  // INCLUDE_TREE_DICTIONARY_H_        if (!node) return 0;
         int lDepth = depth(node->left);
         int rDepth = depth(node->right);
         return 1 + std::max(lDepth, rDepth);
