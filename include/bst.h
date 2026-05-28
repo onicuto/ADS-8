@@ -10,194 +10,81 @@ template <typename T>
 class BST {
  private:
     struct Node {
-        T data;
-        int freq;
-        Node* leftChild;
-        Node* rightChild;
+        T value;
+        int counter;
+        Node* leftBranch;
+        Node* rightBranch;
 
-        explicit Node(const T& val) : data(val), freq(1), leftChild(nullptr), rightChild(nullptr) {}
+        explicit Node(const T& v) : value(v), counter(1), leftBranch(nullptr), rightBranch(nullptr) {}
     };
 
-    Node* treeRoot;
+    Node* rootPtr;
 
-    Node* addNode(Node* cur, T val) {
-        if (!cur) return new Node(val);
-        if (val == cur->data) {
-            ++cur->freq;
-        } else if (val < cur->data) {
-            cur->leftChild = addNode(cur->leftChild, val);
+    Node* insertNode(Node* cur, const T& v) {
+        if (!cur) return new Node(v);
+        if (v == cur->value) {
+            ++cur->counter;
+        } else if (v < cur->value) {
+            cur->leftBranch = insertNode(cur->leftBranch, v);
         } else {
-            cur->rightChild = addNode(cur->rightChild, val);
+            cur->rightBranch = insertNode(cur->rightBranch, v);
         }
         return cur;
     }
 
-    int computeHeight(Node* cur) const {
+    int calcDepth(Node* cur) const {
         if (!cur) return 0;
-        int leftH = computeHeight(cur->leftChild);
-        int rightH = computeHeight(cur->rightChild);
-        return 1 + std::max(leftH, rightH);
+        int leftDep = calcDepth(cur->leftBranch);
+        int rightDep = calcDepth(cur->rightBranch);
+        return 1 + std::max(leftDep, rightDep);
     }
 
-    Node* findNode(Node* cur, const T& val) const {
+    Node* findNode(Node* cur, const T& v) const {
         if (!cur) return nullptr;
-        if (val == cur->data) return cur;
-        if (val < cur->data) return findNode(cur->leftChild, val);
-        return findNode(cur->rightChild, val);
+        if (v == cur->value) return cur;
+        if (v < cur->value) return findNode(cur->leftBranch, v);
+        return findNode(cur->rightBranch, v);
     }
 
-    void eraseTree(Node* cur) {
+    void freeTree(Node* cur) {
         if (cur) {
-            eraseTree(cur->leftChild);
-            eraseTree(cur->rightChild);
+            freeTree(cur->leftBranch);
+            freeTree(cur->rightBranch);
             delete cur;
         }
     }
 
-    void collectInOrder(Node* cur, std::vector<std::pair<T, int>>& outVec) const {
+    void inorderCollect(Node* cur, std::vector<std::pair<T, int>>& out) const {
         if (cur) {
-            collectInOrder(cur->leftChild, outVec);
-            outVec.emplace_back(cur->data, cur->freq);
-            collectInOrder(cur->rightChild, outVec);
+            inorderCollect(cur->leftBranch, out);
+            out.emplace_back(cur->value, cur->counter);
+            inorderCollect(cur->rightBranch, out);
         }
     }
 
  public:
-    BST() : treeRoot(nullptr) {}
-    ~BST() { eraseTree(treeRoot); }
+    BST() : rootPtr(nullptr) {}
+    ~BST() { freeTree(rootPtr); }
 
-    void insert(T val) {
-        treeRoot = addNode(treeRoot, val);
+    void insert(const T& v) {
+        rootPtr = insertNode(rootPtr, v);
     }
 
     int depth() const {
-        int h = computeHeight(treeRoot);
+        int h = calcDepth(rootPtr);
         return h > 0 ? h - 1 : 0;
     }
 
-    int search(const T& val) const {
-        Node* node = findNode(treeRoot, val);
-        return node ? node->freq : 0;
+    int search(const T& v) const {
+        Node* node = findNode(rootPtr, v);
+        return node ? node->counter : 0;
     }
 
     std::vector<std::pair<T, int>> symBypass() const {
         std::vector<std::pair<T, int>> result;
-        collectInOrder(treeRoot, result);
+        inorderCollect(rootPtr, result);
         return result;
     }
 };
 
-#endif  // INCLUDE_BST_H_    }
-
-    // Вспомогательная рекурсивная функция для вычисления глубины дерева
-    int calculateHeight(TreeNode* currentNode) const {
-        if (!currentNode) return -1;
-        int leftHeight = calculateHeight(currentNode->leftChild);
-        int rightHeight = calculateHeight(currentNode->rightChild);
-        return 1 + std::max(leftHeight, rightHeight);
-    }
-
-    // Вспомогательная рекурсивная функция для поиска частоты слова
-    int findFrequency(TreeNode* currentNode, const KeyType& key) const {
-        if (!currentNode) return 0;
-        if (key == currentNode->word) return currentNode->frequency;
-        if (key < currentNode->word)
-            return findFrequency(currentNode->leftChild, key);
-        return findFrequency(currentNode->rightChild, key);
-    }
-
-    // Вспомогательная рекурсивная функция для удаления дерева
-    void deleteTree(TreeNode* currentNode) {
-        if (!currentNode) return;
-        deleteTree(currentNode->leftChild);
-        deleteTree(currentNode->rightChild);
-        delete currentNode;
-    }
-
- public:
-    // Конструктор: создает пустое дерево
-    TreeDictionary() : rootNode(nullptr) {}
-
-    // Деструктор: удаляет все узлы дерева
-    ~TreeDictionary() {
-        deleteTree(rootNode);
-    }
-
-    // Публичный метод для вставки слова
-    void insert(const KeyType& key) {
-        insertNode(rootNode, key);
-    }
-
-    // Публичный метод для получения высоты дерева
-    int depth() const {
-        return calculateHeight(rootNode);
-    }
-
-    // Публичный метод для поиска частоты слова
-    int search(const KeyType& key) const {
-        return findFrequency(rootNode, key);
-    }
-
-    // Получение корневого узла (используется в alg.cpp для обхода)
-    TreeNode* getRoot() const {
-        return rootNode;
-    }
-};
-
-#endif  // INCLUDE_TREE_DICTIONARY_H_        if (!node) return 0;
-        int lDepth = depth(node->left);
-        int rDepth = depth(node->right);
-        return 1 + std::max(lDepth, rDepth);
-    }
-
-    Node* search(Node* node, const T& value) const {
-        if (!node) return nullptr;
-        if (value == node->key) return node;
-        if (value < node->key) return search(node->left, value);
-        return search(node->right, value);
-    }
-
-    void clear(Node* node) {
-        if (node) {
-            clear(node->left);
-            clear(node->right);
-            delete node;
-        }
-    }
-
-    void symBypass(Node* node, std::vector<std::pair<T, int>>& result) const {
-        if (node) {
-            symBypass(node->left, result);
-            result.emplace_back(node->key, node->count);
-            symBypass(node->right, result);
-        }
-    }
-
- public:
-    BST() : root(nullptr) {}
-    ~BST() { clear(root); }
-
-    void insert(T value) {
-        root = insert(root, std::move(value));
-    }
-
-    int depth() const {
-        int d = depth(root);
-        return d > 0 ? d - 1 : 0;
-    }
-
-    int search(const T& value) const {
-        Node* node = search(root, value);
-        return node ? node->count : 0;
-    }
-
-    std::vector<std::pair<T, int>> symBypass() const {
-        std::vector<std::pair<T, int>> result;
-        symBypass(root, result);
-        return result;
-    }
-};
-void makeTree(BST<std::string>& tree, const std::string& filename);
-
-void printFreq(const BST<std::string>& tree);
 #endif  // INCLUDE_BST_H_
