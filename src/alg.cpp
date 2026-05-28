@@ -53,4 +53,3 @@ void printFreq(BST<std::string>& tree) {
 
     out.close();
 }
-}
