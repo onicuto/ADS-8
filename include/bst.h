@@ -8,7 +8,7 @@
 
 template <typename T>
 class BST {
-private:
+ private:
     struct Node {
         T key;
         int count;
@@ -62,7 +62,7 @@ private:
         }
     }
 
-public:
+ public:
     BST() : root(nullptr) {}
     ~BST() { clear(root); }
 
