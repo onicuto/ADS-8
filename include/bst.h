@@ -1,40 +1,93 @@
-// Copyright 2021 NNTU-CS 
-#ifndef INCLUDE_TREE_DICTIONARY_H_
-#define INCLUDE_TREE_DICTIONARY_H_
+// Copyright 2021 NNTU-CS
+#ifndef INCLUDE_BST_H_
+#define INCLUDE_BST_H_
 
 #include <algorithm>
 #include <utility>
 #include <vector>
 
-
-template <typename KeyType>
-class TreeDictionary {
+template <typename T>
+class BST {
  private:
-    struct TreeNode {
-        KeyType word;          // Ключ (слово)
-        int frequency;         // Частота появления
-        TreeNode* leftChild;   // Указатель на левое поддерево
-        TreeNode* rightChild;  // Указатель на правое поддерево
+    struct Node {
+        T data;
+        int freq;
+        Node* leftChild;
+        Node* rightChild;
 
-        // Конструктор узла
-        explicit TreeNode(const KeyType& key)
-            : word(key), frequency(1), leftChild(nullptr), rightChild(nullptr) {}
+        explicit Node(const T& val) : data(val), freq(1), leftChild(nullptr), rightChild(nullptr) {}
     };
 
-    TreeNode* rootNode;  // Корень дерева
+    Node* treeRoot;
 
-    // Вспомогательная рекурсивная функция для вставки узла
-    void insertNode(TreeNode*& currentNode, const KeyType& key) {
-        if (!currentNode) {
-            currentNode = new TreeNode(key);
-        } else if (key < currentNode->word) {
-            insertNode(currentNode->leftChild, key);
-        } else if (key > currentNode->word) {
-            insertNode(currentNode->rightChild, key);
+    Node* addNode(Node* cur, T val) {
+        if (!cur) return new Node(val);
+        if (val == cur->data) {
+            ++cur->freq;
+        } else if (val < cur->data) {
+            cur->leftChild = addNode(cur->leftChild, val);
         } else {
-            currentNode->frequency++;  // Увеличиваем счетчик при повторе
+            cur->rightChild = addNode(cur->rightChild, val);
+        }
+        return cur;
+    }
+
+    int computeHeight(Node* cur) const {
+        if (!cur) return 0;
+        int leftH = computeHeight(cur->leftChild);
+        int rightH = computeHeight(cur->rightChild);
+        return 1 + std::max(leftH, rightH);
+    }
+
+    Node* findNode(Node* cur, const T& val) const {
+        if (!cur) return nullptr;
+        if (val == cur->data) return cur;
+        if (val < cur->data) return findNode(cur->leftChild, val);
+        return findNode(cur->rightChild, val);
+    }
+
+    void eraseTree(Node* cur) {
+        if (cur) {
+            eraseTree(cur->leftChild);
+            eraseTree(cur->rightChild);
+            delete cur;
         }
     }
+
+    void collectInOrder(Node* cur, std::vector<std::pair<T, int>>& outVec) const {
+        if (cur) {
+            collectInOrder(cur->leftChild, outVec);
+            outVec.emplace_back(cur->data, cur->freq);
+            collectInOrder(cur->rightChild, outVec);
+        }
+    }
+
+ public:
+    BST() : treeRoot(nullptr) {}
+    ~BST() { eraseTree(treeRoot); }
+
+    void insert(T val) {
+        treeRoot = addNode(treeRoot, val);
+    }
+
+    int depth() const {
+        int h = computeHeight(treeRoot);
+        return h > 0 ? h - 1 : 0;
+    }
+
+    int search(const T& val) const {
+        Node* node = findNode(treeRoot, val);
+        return node ? node->freq : 0;
+    }
+
+    std::vector<std::pair<T, int>> symBypass() const {
+        std::vector<std::pair<T, int>> result;
+        collectInOrder(treeRoot, result);
+        return result;
+    }
+};
+
+#endif  // INCLUDE_BST_H_    }
 
     // Вспомогательная рекурсивная функция для вычисления глубины дерева
     int calculateHeight(TreeNode* currentNode) const {
